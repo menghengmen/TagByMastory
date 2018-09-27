@@ -9,16 +9,21 @@
 #import "tagView.h"
 #import <Masonry/Masonry.h>
 #define SCREENWIDTH   [UIScreen mainScreen].bounds.size.width
+#define SCREENHEIGHT   [UIScreen mainScreen].bounds.size.height
 
 @interface tagView()
+{
+    
+    CGRect lastItemFrame;//最后一的位置
+}
 @property (nonatomic,assign)  CGFloat tagHeight;///标签的高度
 @property (nonatomic,assign)  CGFloat horMargin;///左右间距
 @property (nonatomic,assign)  CGFloat verMargin;///上下间距
 @property (nonatomic,assign)  CGFloat tagInnerVerMargin;///标签内部上下间距
 @property (nonatomic,assign)  CGFloat tagInnerHorMargin;///标签内部左右间距
 @property (nonatomic,assign)  CGFloat tagVerMargin;///标签之间的间距
-@property(nonatomic,strong)NSMutableArray *tagsArray; ///
-
+@property (nonatomic,strong)  NSMutableArray *tagsArray; ///
+@property (nonatomic,strong)  UIScrollView *contentView;
 
 @end
 
@@ -27,10 +32,10 @@
 -(instancetype)initWithFrame:(CGRect)frame dataArray:(NSMutableArray*)data{
     self = [super initWithFrame:frame];
     if (self) {
-        self.tagHeight = 44;
+        self.tagHeight = 30;
         self.horMargin = 10;
         self.verMargin = 10;
-        self.tagInnerVerMargin = 5;
+        self.tagInnerVerMargin = 20;
         self.tagInnerHorMargin = 5;
         self.tagVerMargin = 20;
         self.dataArray = data;
@@ -45,16 +50,29 @@
 
 
 -(void)setUpUi{
+    [self addSubview:self.contentView];
+
     self.tagsArray = [NSMutableArray new];
     for (int i = 0 ; i <self.dataArray.count; i ++) {
         UIButton *tagBtn = [UIButton new];
         [tagBtn setTitle:self.dataArray[i] forState:UIControlStateNormal];
         [tagBtn addTarget:self action:@selector(click:) forControlEvents:UIControlEventTouchUpInside];
-        [self addSubview:tagBtn];
+        [self.contentView addSubview:tagBtn];
         [self.tagsArray addObject:tagBtn];
     }
     
     [self layoutTags];
+    for (int i =0 ; i <self.tagsArray.count; i ++) {
+        UIButton *itemBtn = self.tagsArray[i];
+        ///可以拿到宽高
+        //NSDictionary *attrs = @{NSFontAttributeName : [UIFont systemFontOfSize:17]};
+        // CGFloat width =  [itemBtn.titleLabel.text  sizeWithAttributes:attrs].width;
+        
+    }
+    
+    
+
+
 }
 
 -(void)click:(UIButton*)sender{
@@ -106,15 +124,37 @@
                       changeNewLine = NO;
                 } else {
                     make.left.mas_equalTo(lastItem.mas_right).offset(self.tagVerMargin);
-                       make.top.mas_equalTo(lastItem.mas_top);
+                        make.top.mas_equalTo(lastItem.mas_top);
                 }
                 
             }
                 
          }];
-    
+
         lastItem = itemBtn;
+        ///最后一个
+         if (i == self.tagsArray.count-1) {
+            [self.superview layoutIfNeeded];
+             ///需要延迟一段时间，不然拿不到frame
+             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                self->lastItemFrame = lastItem.frame;
+                ///底部留白20
+                 self.contentView.contentSize = CGSizeMake(SCREENWIDTH, CGRectGetMaxY(self->lastItemFrame)+20);
+
+            });
+            
+            
+        }
     }
+}
+
+-(UIScrollView*)contentView{
+    if (!_contentView) {
+        _contentView = [UIScrollView new];
+        _contentView.frame = CGRectMake(0, 0, SCREENWIDTH, SCREENHEIGHT);
+    }
+    return _contentView;
+    
 }
 
 
