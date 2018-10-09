@@ -12,7 +12,7 @@ typedef void(^tagClick)(NSString *tagTitle);
 
 @interface tagView : UIView
 -(instancetype)initWithFrame:(CGRect)frame dataArray:(NSMutableArray*)data;
-@property (nonatomic,copy)  tagClick clickBlock;//回调
+@property (nonatomic,copy)    tagClick clickBlock;//回调
 @property (nonatomic,strong)  NSMutableArray *dataArray;
 
 @end
